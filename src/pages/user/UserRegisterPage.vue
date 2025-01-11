@@ -1,7 +1,5 @@
 <template>
-  <div id="homePage">
-      这是主页
-  </div>
+
 </template>
 
 <script setup lang="ts">
@@ -9,7 +7,5 @@
 </script>
 
 <style scoped>
-#homePage {
 
-}
 </style>
