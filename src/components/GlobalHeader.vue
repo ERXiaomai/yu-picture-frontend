@@ -18,11 +18,19 @@
           @click="doMenuClick"
         />
       </a-col>
-
+<!-- 用户信息展示栏 --->
       <a-col flex="120px">
         <div class="user-login-status">
           <div v-if="loginUserStore.loginUser.id">
-            {{loginUserStore.loginUser.userName ?? '未登录'}}
+            <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+            {{loginUserStore.loginUser.userName ?? '无名'}}
+            <template #overlay>
+              <a-menu>
+                <a-menu-item @click="doLogout">
+                  <a href="javascript:;">退出登录</a>
+                </a-menu-item>
+              </a-menu>
+            </template>
           </div>
           <div v-else>
             <a-button type="primary" href="/user/login">登录</a-button>

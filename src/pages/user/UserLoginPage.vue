@@ -2,7 +2,7 @@
   <div id="userLoginPage">
     <h2 class="title">云图库 - 用户登录</h2>
     <div class="desc">企业级智能协同云图库</div>
-    <a-form :model="formState" name="basic" autocomplete="off" @finish="handleSubmit">
+    <a-form :model="formState" name="basic" autocomplete="off" @finish=" handleSubmit">
       <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入账号!' }]">
         <a-input v-model:value="formState.userAccount" placeholder="请输入账号" />
       </a-form-item>
@@ -20,28 +20,43 @@
         没有账号？
         <RouterLink to="/user/register">去注册</RouterLink>
       </div>
-      <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-        <a-button type="primary" html-type="submit">Submit</a-button>
+      <a-form-item>
+        <a-button type="primary" html-type="submit" style="width: 100%">登录</a-button>
       </a-form-item>
     </a-form>
   </div>
 </template>
 <script lang="ts" setup>
 import { reactive } from 'vue'
-
+import {userLoginUsingPost} from '@/api/userController.ts'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import { message } from 'ant-design-vue'
+import router from '@/router'
 //用于接收表单输入的值
 const formState = reactive<API.UserLoginRequest>({
   userAccount: '',
   userPassword: '',
 })
-
-const handleSubmit = (values: any) => {
-  console.log('Success:', values)
+const loginUserStore = useLoginUserStore()
+/**
+ * 表单提交
+ * @param values
+ */
+const handleSubmit = async (values: any) => {
+  const res = await userLoginUsingPost(values)
+  // 登录成功，跳转到首页,把登陆状态保存到全局状态中
+    if(res.data.code === 0 && res.data.data){
+      await loginUserStore.fetchLoginUser();
+      message.success('登录成功');
+      router.push({
+        path: '/',
+        replace: true,
+      })
+    }else{
+      message.error('登陆失败'+res.data.message);
+    }
 }
 
-const onFinishFailed = (errorInfo: any) => {
-  console.log('Failed:', errorInfo)
-}
 </script>
 <style scoped>
   #userLoginPage {
