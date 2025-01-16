@@ -18,37 +18,42 @@
           @click="doMenuClick"
         />
       </a-col>
-<!-- 用户信息展示栏 --->
+      <!-- 用户信息展示栏 --->
       <a-col flex="120px">
         <div class="user-login-status">
           <div v-if="loginUserStore.loginUser.id">
-            <a-avatar :src="loginUserStore.loginUser.userAvatar" />
-            {{loginUserStore.loginUser.userName ?? '无名'}}
-            <template #overlay>
-              <a-menu>
-                <a-menu-item @click="doLogout">
-                  <a href="javascript:;">退出登录</a>
-                </a-menu-item>
-              </a-menu>
-            </template>
+            <a-dropdown>
+              <ASpace>
+                <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+                {{ loginUserStore.loginUser.userName ?? '无名' }}
+              </ASpace>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click="doLogout">
+                    <LogoutOutlined />
+                    退出登录
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
           </div>
+
           <div v-else>
             <a-button type="primary" href="/user/login">登录</a-button>
           </div>
-
         </div>
       </a-col>
     </a-row>
   </div>
 </template>
 
-
 <script lang="ts" setup>
 import { h, ref } from 'vue'
-import { HomeOutlined } from '@ant-design/icons-vue'
-import { MenuProps } from 'ant-design-vue'
+import { HomeOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import { type MenuProps, message } from 'ant-design-vue'
+import { userLogoutUsingPost } from '@/api/userController.ts'
 
 const loginUserStore = useLoginUserStore()
 loginUserStore.fetchLoginUser()
@@ -61,17 +66,18 @@ const items = ref<MenuProps['items']>([
     title: '主页',
   },
   {
-    key: '/about',
-    label: '关于',
-    title: '关于',
+    key: '/admin/userManage',
+    label: '用户管理',
+    title: '用户管理',
   },
+
   {
     key: 'others',
     label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
     title: '编程导航',
   },
 ])
-const router = useRouter();
+const router = useRouter()
 //路由跳转事件
 const doMenuClick = ({ key }) => {
   router.push({
@@ -79,12 +85,28 @@ const doMenuClick = ({ key }) => {
   })
 }
 //当前要高亮的菜单项
-const current = ref<string[]>([]);
+const current = ref<string[]>([])
 //监听路由变化，更新路由菜单项
-router.afterEach((to,from,next) => {
-  current.value = [to.path];
-});
+router.afterEach((to, from, next) => {
+  current.value = [to.path]
+})
 
+//用户注销
+const doLogout = async ()=>{
+  const res = await userLogoutUsingPost()
+  if(res.data.code === 0 ){
+    loginUserStore.setLoginUser({
+      userName: '未登录',
+    })
+    message.success('退出登录成功');
+    router.push({
+      path: '/user/login',
+      replace: true,
+    })
+  }else{
+    message.error('退出登录失败'+res.data.message);
+  }
+}
 </script>
 
 <style scoped>
