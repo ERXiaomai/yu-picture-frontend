@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts" setup>
-import { h, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { HomeOutlined, LogoutOutlined } from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
@@ -58,7 +58,9 @@ import { userLogoutUsingPost } from '@/api/userController.ts'
 const loginUserStore = useLoginUserStore()
 loginUserStore.fetchLoginUser()
 
-const items = ref<MenuProps['items']>([
+
+//未经过滤的菜单项
+const originItems = [
   {
     key: '/',
     icon: () => h(HomeOutlined),
@@ -76,7 +78,24 @@ const items = ref<MenuProps['items']>([
     label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
     title: '编程导航',
   },
-])
+]
+//根据权限过滤菜单项
+const filterMenu = (menus = [] as MenuProps['items']) => {
+  return menus?.filter((menu) => {
+    //管理也才能看到/admin开头的菜单
+    if (menu?.key?.startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
+//展示在菜单的路由数组
+const items = computed(() => filterMenu(originItems)
+)
+
 const router = useRouter()
 //路由跳转事件
 const doMenuClick = ({ key }) => {
@@ -92,19 +111,19 @@ router.afterEach((to, from, next) => {
 })
 
 //用户注销
-const doLogout = async ()=>{
+const doLogout = async () => {
   const res = await userLogoutUsingPost()
-  if(res.data.code === 0 ){
+  if (res.data.code === 0) {
     loginUserStore.setLoginUser({
       userName: '未登录',
     })
-    message.success('退出登录成功');
+    message.success('退出登录成功')
     router.push({
       path: '/user/login',
       replace: true,
     })
-  }else{
-    message.error('退出登录失败'+res.data.message);
+  } else {
+    message.error('退出登录失败' + res.data.message)
   }
 }
 </script>
