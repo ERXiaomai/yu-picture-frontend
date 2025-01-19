@@ -137,4 +137,7 @@ declare namespace API {
     userProfile?: string
     userRole?: string
   }
+
+  export interface PictureVO {
+  }
 }
