@@ -6,7 +6,7 @@
       :custom-request="handleUpload"
       :before-upload="beforeUpload"
     >
-      <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
+      <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
       <div v-else>
         <loading-outlined v-if="loading"></loading-outlined>
         <plus-outlined v-else></plus-outlined>
@@ -39,40 +39,25 @@ const handleUpload = ()=>{
 
 }
 
-const fileList = ref([]);
-const loading = ref<boolean>(false);
-const imageUrl = ref<string>('');
 
-const handleChange = (info: UploadChangeParam) => {
-  if (info.file.status === 'uploading') {
-    loading.value = true;
-    return;
-  }
-  if (info.file.status === 'done') {
-    // Get this url from response in real world.
-    getBase64(info.file.originFileObj, (base64Url: string) => {
-      imageUrl.value = base64Url;
-      loading.value = false;
-    });
-  }
-  if (info.file.status === 'error') {
-    loading.value = false;
-    message.error('upload error');
-  }
-};
+const loading = ref<boolean>(false);
+//const imageUrl = ref<string>('');
+
 
 /**
  * 上传前的校验
  * @param file
  */
 const beforeUpload = (file: UploadProps['fileList'][number]) => {
+  //校验图片格式
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
   if (!isJpgOrPng) {
-    message.error('You can only upload JPG file!');
+    message.error('不支持上传该格式的图片，推荐jpg或png');
   }
+  //校验图片大小
   const isLt2M = file.size / 1024 / 1024 < 2;
   if (!isLt2M) {
-    message.error('Image must smaller than 2MB!');
+    message.error('不能上传超过2M的图片');
   }
   return isJpgOrPng && isLt2M;
 };
