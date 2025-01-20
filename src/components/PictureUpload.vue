@@ -1,5 +1,5 @@
 <template>
-  <div id="pictureUpload">
+  <div class="picture-upload">
     <a-upload
       list-type="picture-card"
       :show-upload-list="false"
@@ -10,38 +10,49 @@
       <div v-else>
         <loading-outlined v-if="loading"></loading-outlined>
         <plus-outlined v-else></plus-outlined>
-        <div class="ant-upload-text">Upload</div>
+        <div class="ant-upload-text">点击或拖拽上传图片</div>
       </div>
     </a-upload>
   </div>
-
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue';
-import { message } from 'ant-design-vue';
-import type { UploadChangeParam, UploadProps } from 'ant-design-vue';
+import { ref } from 'vue'
+import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
+import type { UploadChangeParam, UploadProps } from 'ant-design-vue'
+import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 
-interface Props{
-  picture?: API.PictureVO;
-  onSuccess?: (picture: API.PictureVO) => void;
+interface Props {
+  picture?: API.PictureVO
+  onSuccess?: (picture: API.PictureVO) => void
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
-function getBase64(img: Blob, callback: (base64Url: string) => void) {
-  const reader = new FileReader();
-  reader.addEventListener('load', () => callback(reader.result as string));
-  reader.readAsDataURL(img);
+const loading = ref<boolean>(false)
+
+/**
+ * 上传
+ * @param file
+ */
+const handleUpload = async ({ file }: any) => {
+  loading.value = true
+  try {
+    const params = props.picture ? { id: props.picture.id } : {};
+    const res = await uploadPictureUsingPost(params, {}, file)
+    if (res.data.code === 0 && res.data.data) {
+      message.success('图片上传成功')
+      // 将上传成功的图片信息传递给父组件
+      props.onSuccess?.(res.data.data)
+    } else {
+      message.error('图片上传失败，' + res.data.message)
+    }
+  } catch (error) {
+    message.error('图片上传失败')
+  } finally {
+    loading.value = false
+  }
 }
-
-const handleUpload = ()=>{
-
-}
-
-
-const loading = ref<boolean>(false);
-//const imageUrl = ref<string>('');
 
 
 /**
@@ -50,22 +61,28 @@ const loading = ref<boolean>(false);
  */
 const beforeUpload = (file: UploadProps['fileList'][number]) => {
   //校验图片格式
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
-    message.error('不支持上传该格式的图片，推荐jpg或png');
+    message.error('不支持上传该格式的图片，推荐jpg或png')
   }
   //校验图片大小
-  const isLt2M = file.size / 1024 / 1024 < 2;
+  const isLt2M = file.size / 1024 / 1024 < 2
   if (!isLt2M) {
-    message.error('不能上传超过2M的图片');
+    message.error('不能上传超过2M的图片')
   }
-  return isJpgOrPng && isLt2M;
-};
+  return isJpgOrPng && isLt2M
+}
 </script>
 <style scoped>
-.avatar-uploader > .ant-upload {
-  width: 128px;
-  height: 128px;
+.picture-upload :deep(.ant-upload) {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 152px;
+  min-width: 152px;
+}
+.picture-upload img{
+  max-width: 100%;
+  max-height: 480px;
 }
 .ant-upload-select-picture-card i {
   font-size: 32px;
