@@ -23,7 +23,7 @@
         <a-auto-complete
           v-model:value="pictureForm.category"
           placeholder="请输入分类"
-          :options="catagoryOptions"
+          :options="categoryOptions"
           allowClear
         />
       </a-form-item>
@@ -33,7 +33,7 @@
           mode="tags"
           placeholder="请输入标签"
           :options="tagOptions"
-          allowClear
+          allow-clear
         />
       </a-form-item>
       <a-form-item>
@@ -88,7 +88,7 @@ const handleSubmit = async (values: any) => {
   }
 }
 
-const catagoryOptions = ref<string[]>([])
+const categoryOptions = ref<string[]>([])
 const tagOptions = ref<string[]>([])
 /**
  * 获取标签和分类选项
@@ -96,7 +96,6 @@ const tagOptions = ref<string[]>([])
  */
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
-  //操作成功
   if (res.data.code === 0 && res.data.data) {
     tagOptions.value = (res.data.data.tagList ?? []).map((data: string) => {
       return {
@@ -104,17 +103,19 @@ const getTagCategoryOptions = async () => {
         label: data,
       }
     })
-    catagoryOptions.value = (res.data.data.categoryList ?? []).map((data: string) => {
+    categoryOptions.value = (res.data.data.categoryList ?? []).map((data: string) => {
       return {
         value: data,
         label: data,
       }
     })
   } else {
-    message.error('创建失败，' + res.data.message)
+    message.error('获取标签分类列表失败，' + res.data.message)
   }
 }
-
+onMounted(() => {
+  getOldPicture()
+})
 const route = useRoute()
 
 // 获取老数据
@@ -135,10 +136,6 @@ const getOldPicture = async () => {
     }
   }
 }
-
-onMounted(() => {
-  getOldPicture()
-})
 
 onMounted(() => {
   getTagCategoryOptions()

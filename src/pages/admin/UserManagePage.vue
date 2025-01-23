@@ -85,7 +85,7 @@ const columns = [
 ]
 
 //定义数据
-const dataList = ref<[]>([])
+const dataList = ref<API.UserVo[]>([])
 const total = ref(0)
 
 //搜索条件
