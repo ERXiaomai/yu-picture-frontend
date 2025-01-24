@@ -52,6 +52,13 @@
           </a-descriptions>
           <!-- 操作区 -->
             <a-space wrap>
+              <a-button type="primary" @click="doDownload">
+                免费下载
+                <template #icon>
+                  <DownloadOutlined />
+                </template>
+              </a-button>
+
               <a-button v-if="canEdit" :icon="h(EditOutlined)" type="=default" @click="doEdit">编辑</a-button>
               <a-button v-if="canEdit" :icon="h(DeleteOutlined)" danger @click="doDelete">删除</a-button>
             </a-space>
@@ -69,8 +76,8 @@ import {
   getPictureVoByIdUsingGet
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import { formatSize } from '../utils'
-import {EditOutlined,DeleteOutlined} from '@ant-design/icons-vue'
+import { formatSize,downloadImage} from '../utils'
+import {EditOutlined,DeleteOutlined,DownloadOutlined} from '@ant-design/icons-vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
 
@@ -127,6 +134,12 @@ const doDelete = async () => {
     message.error('删除失败')
   }
 }
+
+// 处理下载
+const doDownload = () => {
+  downloadImage(picture.value.url)
+}
+
 </script>
 
 <style scoped>
