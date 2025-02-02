@@ -1,55 +1,25 @@
 <template>
-  <div id="addPicturePage">
-    <h2 style="margin-bottom: 16px">
-      {{route.query?.id ? '修改图片' : '创建图片'}}
-    </h2>
-  <!-- 选择上传方式 -->
-    <a-tabs v-model:activeKey="uploadType">
-      <a-tab-pane key="file" tab="文件上传">
-        <!-- 图片上传组件 -->
-        <PictureUpload :picture="picture" :onSuccess="onSuccess" />
-      </a-tab-pane>
-      <!-- URL图片上传组件 -->
-      <a-tab-pane key="url" tab="url上传" force-render>
-        <UrlPictureUpload :picture="picture" :onSuccess="onSuccess" />
-      </a-tab-pane>
-    </a-tabs>
-
-
+  <div id="addPictureBatchPage">
+    <h2 style="margin-bottom: 16px">批量创建</h2>
     <!-- 图片信息表单 -->
-    <a-form v-if="picture" name="pictureForm" layout="vertical" :model="pictureForm" @finish="handleSubmit">
-      <a-form-item label="名称" name="name">
-        <a-input v-model:value="pictureForm.name" placeholder="请输入名称" />
+    <a-form layout="vertical" :model="formData" @finish="handleSubmit">
+      <a-form-item label="关键词" name="searchText">
+        <a-input v-model:value="formData.name" placeholder="请输入关键词" />
       </a-form-item>
-      <a-form-item label="简介" name="introduction">
-        <a-textarea
-          v-model:value="pictureForm.introduction"
-          placeholder="请输入简介"
-          :rows="2"
-          autoSize
+      <a-form-item label="抓取数量" name="count">
+        <a-input-number
+          v-model:value="formData.count"
+          placeholder="请输入数量"
+          style="min-width: 180px"
+          :min="1"
+          :max="30"
           allowClear
         />
       </a-form-item>
-      <a-form-item label="分类" name="category">
-        <a-auto-complete
-          v-model:value="pictureForm.category"
-          placeholder="请输入分类"
-          :options="categoryOptions"
-          allowClear
-        />
+      <a-form-item label="名称前缀" name="namePrefix">
+        <a-input v-model:value="formData.namePrefix" placeholder="请输入名称前缀，会自动补充序号" allow-clear />
       </a-form-item>
-      <a-form-item label="标签" name="tags">
-        <a-select
-          v-model:value="pictureForm.tags"
-          mode="tags"
-          placeholder="请输入标签"
-          :options="tagOptions"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 100%">创建</a-button>
-      </a-form-item>
+        <a-button type="primary" html-type="submit" style="width: 100%" :loading="loading">执行任务</a-button>
     </a-form>
   </div>
 </template>
@@ -62,19 +32,15 @@ import { message } from 'ant-design-vue'
 import {
   editPictureUsingPost,
   getPictureVoByIdUsingGet,
-  listPictureTagCategoryUsingGet
+  listPictureTagCategoryUsingGet,
 } from '@/api/pictureController.ts'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
 
-const picture = ref<API.PictureVO>()
-const pictureForm = reactive<API.PictureEditRequest>({})
-const uploadType = ref<'file'|'url'>('file')
+const formData = reactive<API.PictureUploadByBatchRequest>({
+  count : 10
+})
 
-const onSuccess = (newPicture: API.PictureVO) => {
-  picture.value = newPicture
-  pictureForm.name = newPicture.name
-}
-
+const loading = ref(true)
 const router = useRouter()
 
 /**
@@ -142,10 +108,10 @@ const getOldPicture = async () => {
     if (res.data.code === 0 && res.data.data) {
       const data = res.data.data
       picture.value = data
-      pictureForm.name = data.name
-      pictureForm.introduction = data.introduction
-      pictureForm.category = data.category
-      pictureForm.tags = data.tags
+      formData.name = data.name
+      formData.introduction = data.introduction
+      formData.category = data.category
+      formData.tags = data.tags
     }
   }
 }
@@ -156,7 +122,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-#addPicturePage {
+#addPictureBatchPage {
   max-width: 720px;
   margin: 0 auto;
 }
