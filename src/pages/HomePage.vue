@@ -3,12 +3,12 @@
     <!-- 搜索 -->
     <div class="search-bar">
       <a-input-search
-      v-model:value="searchParams.searchText"
-      placeholder="从海量图片中搜索"
-      enter-button="搜索"
-      size="large"
-      @search="doSearch"
-    />
+        v-model:value="searchParams.searchText"
+        placeholder="从海量图片中搜索"
+        enter-button="搜索"
+        size="large"
+        @search="doSearch"
+      />
     </div>
 
     <!-- 分类 + 标签 -->
@@ -30,7 +30,6 @@
       </a-space>
     </div>
 
-
     <!-- 图片列表 -->
     <a-list
       :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
@@ -43,8 +42,10 @@
           <!-- 单张图片 -->
           <a-card hoverable @click="doClickPicture(picture)">
             <template #cover>
-              <img :alt="picture.name" :src="picture.url"
-              style="height: 180px; object-fit: contain"
+              <img
+                :alt="picture.name"
+                :src="picture.thumbnailUrl ?? picture.url"
+                style="height: 180px; object-fit: contain"
               />
             </template>
             <a-card-meta :title="picture.name">
@@ -68,7 +69,10 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { listPictureTagCategoryUsingGet, listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
+import {
+  listPictureTagCategoryUsingGet,
+  listPictureVoByPageUsingPost,
+} from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 
@@ -85,7 +89,7 @@ const searchParams = reactive<API.PictureQueryRequest>({
 })
 //获取数据
 const fetchData = async () => {
-  loading.value = true;
+  loading.value = true
   // 转换搜索参数
   const params = {
     ...searchParams,
@@ -116,12 +120,13 @@ onMounted(() => {
 //分页
 const pagination = computed(() => {
   return {
-    current: searchParams.current,
-    pageSize: searchParams.pageSize,
+    current: searchParams.current ?? 1,
+    pageSize: searchParams.pageSize ?? 10,
     total: total.value,
     onChange: (page: number, pageSize: number) => {
       searchParams.current = page
       searchParams.pageSize = pageSize
+      fetchData()
     },
   }
 })
@@ -158,7 +163,7 @@ const getTagCategoryOptions = async () => {
   }
 }
 const router = useRouter()
-const doClickPicture = (picture: API.PictureVO) =>{
+const doClickPicture = (picture: API.PictureVO) => {
   router.push({
     path: `/picture/${picture.id}`,
   })
@@ -167,18 +172,17 @@ const doClickPicture = (picture: API.PictureVO) =>{
 onMounted(() => {
   getTagCategoryOptions()
 })
-
 </script>
 
 <style scoped>
-#homePage{
+#homePage {
   margin-bottom: 16px;
 }
 #homePage .search-bar {
   max-width: 480px;
   margin: 0 auto 16px;
 }
-#homePage .tag-bar{
+#homePage .tag-bar {
   margin-bottom: 16px;
 }
 </style>
